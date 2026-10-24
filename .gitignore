@@ -1,0 +1,12 @@
+target/
+*.class
+*.o
+*.sym
+*.map
+*.ram
+*.rtc
+*.sav
+*.png
+.DS_Store
+.idea/
+*.iml
