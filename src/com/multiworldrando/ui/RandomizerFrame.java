@@ -86,18 +86,19 @@ public final class RandomizerFrame extends JFrame {
 
         c.gridy = 3;
         form.add(new JLabel(
-                "<html><i>Seeds are generated automatically when you click Generate.</i></html>"), c);
+                "<html><i>Leave the seed blank to generate a random one, or type a seed"
+                + " (1-16 hex digits) to generate exactly that one.</i></html>"), c);
 
         c.gridy = 4;
         c.gridwidth = 1;
         c.gridx = 0;
-        form.add(new JLabel("Seed:"), c);
+        form.add(new JLabel("Seed (optional):"), c);
 
         c.gridx = 1;
         c.gridwidth = 2;
         c.fill = GridBagConstraints.HORIZONTAL;
-        seedField.setEditable(false);
-        seedField.setText("(generated on Generate)");
+        seedField.setToolTipText(
+                "Blank = auto-generate. Type 1-16 hex digits (0-9, A-F) to reproduce a seed.");
         form.add(seedField, c);
 
         root.add(form, BorderLayout.NORTH);
@@ -137,6 +138,17 @@ public final class RandomizerFrame extends JFrame {
             return;
         }
 
+        Long requestedSeed = null;
+        String seedText = seedField.getText().trim();
+        if (!seedText.isEmpty()) {
+            try {
+                requestedSeed = com.multiworldrando.core.SeedGenerator.parseSeed(seedText);
+            } catch (IllegalArgumentException ex) {
+                log("Invalid seed \"" + seedText + "\": " + ex.getMessage() + ".");
+                return;
+            }
+        }
+
         Settings settings = new Settings();
         settings.setRandomizeStartingGold(startingGoldBox.isSelected());
         settings.setRandomizeDrawerMoney(drawerMoneyBox.isSelected());
@@ -145,10 +157,11 @@ public final class RandomizerFrame extends JFrame {
         log("Generating\u2026");
 
         // Keep the UI responsive while validating and patching.
+        final Long seed = requestedSeed;
         new SwingWorker<Randomizer.Result, Void>() {
             @Override
             protected Randomizer.Result doInBackground() throws Exception {
-                return Randomizer.randomize(romFile, settings, null);
+                return Randomizer.randomize(romFile, settings, null, seed);
             }
 
             @Override

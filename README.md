@@ -33,7 +33,9 @@ java -jar MultiWorldRando.jar
 2. Tick the options you want:
    - **Randomize starting gold (0–500G)**
    - **Randomize grandpa's rainy day money drawer (0–1000G)**
-3. Click **Generate** — the seed is generated automatically
+3. Optionally type a **Seed** (1–16 hex digits) to generate exactly that
+   seed — leave it blank to generate a random one
+4. Click **Generate**
 
 Output (written next to the ROM):
 
@@ -43,10 +45,11 @@ Output (written next to the ROM):
 ### Headless (automation/testing)
 
 ```sh
-java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--out <dir>]
+java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--seed <hex>] [--out <dir>]
 ```
 
-Prints `SEED=`, `ROM=`, `SPOILER=` on success.
+Prints `SEED=`, `ROM=`, `SPOILER=` on success. With `--seed` the run is
+reproducible; without it the seed is generated automatically.
 
 ## How the starting gold patch works
 
