@@ -72,7 +72,8 @@ Reverse-engineered facts (Harvest Moon GB (USA)):
 - The drawer dialog (message `$09`) is rewritten at generation time to
   match the roll, using the game's glyph encoding:
   - **0G** → *"Empty! Grandpa's rainy day fund was all sunshine."*
-  - **1–499G** → *"Rainy day fund? More like a light drizzle."*
+  - **1–499G** → *"Rainy day fund? More like a light drizzle."* followed by
+    `Received XG!!` with the actual amount
   - **500–1000G** → the vanilla dialog, with the `Received XG!!` line
     updated to the actual amount
 

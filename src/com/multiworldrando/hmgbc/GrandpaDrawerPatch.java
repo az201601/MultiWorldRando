@@ -19,7 +19,8 @@ import com.multiworldrando.core.SpoilerLog;
  * Message tiers (user-approved):
  * <ul>
  *   <li>0G: "Empty! Grandpa's rainy day fund was all sunshine."</li>
- *   <li>1-499G: "Rainy day fund? More like a light drizzle."</li>
+ *   <li>1-499G: "Rainy day fund? More like a light drizzle." followed by
+ *       "Received XG!!" showing the actual rolled amount.</li>
  *   <li>500-1000G: the vanilla dialog, with the "Received XG!!" line
  *       updated to show the actual rolled amount.</li>
  * </ul>
@@ -123,9 +124,10 @@ public final class GrandpaDrawerPatch implements Patch {
         } else if (gold < 500) {
             message = buildFrames(new String[] {
                 "Rainy day fund? More like",
-                "a light drizzle."
+                "a light drizzle.",
+                "Received " + gold + "G!!"
             });
-            description = "\"" + TIER_DRIZZLE + "\"";
+            description = "\"" + TIER_DRIZZLE + "\" then \"Received " + gold + "G!!\"";
         } else {
             // Keep the vanilla dialog; re-issue frame 4 so the "Received XG!!"
             // line shows the actual rolled amount instead of a fixed 1000G.
