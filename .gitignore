@@ -2,3 +2,5 @@ out/
 dist/
 *.class
 *.jar
+# release artifact distributed in-repo (see README)
+!MultiWorldRando.jar
