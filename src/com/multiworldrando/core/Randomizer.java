@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.multiworldrando.hmgbc.GrandpaDrawerPatch;
 import com.multiworldrando.hmgbc.HarvestMoonGbcRom;
 import com.multiworldrando.hmgbc.StartingGoldPatch;
 
@@ -53,10 +54,15 @@ public final class Randomizer {
                 RomValidator.md5Hex(rom));
         spoiler.addSetting("Randomize starting gold (0-500G)",
                 settings.isRandomizeStartingGold() ? "yes" : "no");
+        spoiler.addSetting("Randomize grandpa's rainy day money drawer (0-1000G)",
+                settings.isRandomizeDrawerMoney() ? "yes" : "no");
 
         List<Patch> patches = new ArrayList<Patch>();
         if (settings.isRandomizeStartingGold()) {
             patches.add(new StartingGoldPatch());
+        }
+        if (settings.isRandomizeDrawerMoney()) {
+            patches.add(new GrandpaDrawerPatch());
         }
 
         int index = 1;

@@ -44,11 +44,14 @@ public final class MultiWorldRando {
     private static int runHeadless(String[] args) {
         String romPath = null;
         boolean gold = false;
+        boolean drawer = false;
         File outDir = null;
 
         for (int i = 1; i < args.length; i++) {
             if ("--gold".equals(args[i])) {
                 gold = true;
+            } else if ("--drawer".equals(args[i])) {
+                drawer = true;
             } else if ("--out".equals(args[i]) && i + 1 < args.length) {
                 outDir = new File(args[++i]);
             } else if (romPath == null) {
@@ -57,13 +60,14 @@ public final class MultiWorldRando {
         }
 
         if (romPath == null) {
-            System.err.println("usage: --headless <rom> [--gold] [--out <dir>]");
+            System.err.println("usage: --headless <rom> [--gold] [--drawer] [--out <dir>]");
             return 2;
         }
 
         try {
             Settings settings = new Settings();
             settings.setRandomizeStartingGold(gold);
+            settings.setRandomizeDrawerMoney(drawer);
 
             Randomizer.Result result =
                     Randomizer.randomize(new File(romPath), settings, outDir);

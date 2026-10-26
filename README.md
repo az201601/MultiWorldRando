@@ -5,7 +5,8 @@ An Archipelago-like multiworld randomizer, currently targeting **Harvest Moon GB
 
 ## Status
 
-First feature is in: **starting gold randomization (0–500G)**.
+First features are in: **starting gold randomization (0–500G)** and
+**grandpa's rainy day money drawer randomization (0–1000G)**.
 
 ## Requirements
 
@@ -29,7 +30,9 @@ java -jar MultiWorldRando.jar
 
 1. **Browse…** to choose your Harvest Moon GB ROM (it is validated — wrong
    files are rejected with an explanation)
-2. Tick **Randomize starting gold (0–500G)**
+2. Tick the options you want:
+   - **Randomize starting gold (0–500G)**
+   - **Randomize grandpa's rainy day money drawer (0–1000G)**
 3. Click **Generate** — the seed is generated automatically
 
 Output (written next to the ROM):
@@ -40,7 +43,7 @@ Output (written next to the ROM):
 ### Headless (automation/testing)
 
 ```sh
-java -jar MultiWorldRando.jar --headless <rom> [--gold] [--out <dir>]
+java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--out <dir>]
 ```
 
 Prints `SEED=`, `ROM=`, `SPOILER=` on success.
@@ -57,6 +60,21 @@ Reverse-engineered facts (Harvest Moon GB (USA)):
 - The patch replaces the two immediate bytes per mirror — a pure data patch
 - Verified end-to-end in an emulator: new game on the patched ROM starts with
   the seeded amount instead of 500G
+
+### Grandpa's rainy day money drawer
+
+- Interacting with object `$09` (the drawer) runs a one-time grant of
+  **1000G**, gated by SRAM flag `$B8FF` ("empty" message on revisit)
+- The handler lives at CPU `$59C8` in banks `$02`/`$22` and adds the amount
+  via the same `Call_000_0cbb`/`Call_000_1056` money machinery
+- The patch replaces the `ld bc, $03e8` immediate (file offsets `0x99D6`
+  and `0x89943`) — again a pure data patch
+- The drawer dialog (message `$09`) is rewritten at generation time to
+  match the roll, using the game's glyph encoding:
+  - **0G** → *"Empty! Grandpa's rainy day fund was all sunshine."*
+  - **1–499G** → *"Rainy day fund? More like a light drizzle."*
+  - **500–1000G** → the vanilla dialog, with the `Received XG!!` line
+    updated to the actual amount
 
 ## Layout
 

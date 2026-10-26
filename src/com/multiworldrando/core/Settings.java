@@ -6,6 +6,7 @@ package com.multiworldrando.core;
 public final class Settings {
 
     private boolean randomizeStartingGold;
+    private boolean randomizeDrawerMoney;
 
     public boolean isRandomizeStartingGold() {
         return randomizeStartingGold;
@@ -13,5 +14,13 @@ public final class Settings {
 
     public void setRandomizeStartingGold(boolean randomizeStartingGold) {
         this.randomizeStartingGold = randomizeStartingGold;
+    }
+
+    public boolean isRandomizeDrawerMoney() {
+        return randomizeDrawerMoney;
+    }
+
+    public void setRandomizeDrawerMoney(boolean randomizeDrawerMoney) {
+        this.randomizeDrawerMoney = randomizeDrawerMoney;
     }
 }
