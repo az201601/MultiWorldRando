@@ -50,6 +50,33 @@ public final class HarvestMoonGbcRom {
         (byte) 0xEA, (byte) 0xF1, (byte) 0xB8
     };
 
+    /**
+     * Grandpa's rainy day money drawer: interacting with object $09 runs a
+     * one-time grant of 1000G (flag $B8FF in SRAM, message $09 first time /
+     * $0a afterwards). The grant amount is the 16-bit immediate of
+     * {@code ld bc, $03e8} right after {@code ld hl, $b8ef}:
+     * <pre>
+     * ld hl, $b8ef
+     * ld bc, $03e8      ; 1000G  &lt;-- patched: lo, mid
+     * call Call_000_0cbb  ; add bc to money
+     * call Call_000_1056  ; money validation
+     * </pre>
+     * One entry per mirrored copy: {lo-byte offset, mid-byte offset}.
+     * The 12 bytes from lo-4 must equal {@link #DRAWER_GOLD_SIGNATURE}.
+     */
+    public static final int[][] DRAWER_GOLD_IMMEDIATES = {
+        { 0x0099D7, 0x0099D8 }, // bank $02
+        { 0x089944, 0x089945 }, // bank $22
+    };
+
+    /** ld hl,$b8ef / ld bc,$03e8 / call add / call validate. */
+    public static final byte[] DRAWER_GOLD_SIGNATURE = {
+        (byte) 0x21, (byte) 0xEF, (byte) 0xB8,
+        (byte) 0x01, (byte) 0xE8, (byte) 0x03,
+        (byte) 0xCD, (byte) 0xBB, (byte) 0x0C,
+        (byte) 0xCD, (byte) 0x56, (byte) 0x10
+    };
+
     /** Global ROM checksum (not verified by the game, kept correct anyway). */
     public static final int GLOBAL_CHECKSUM_HI = 0x14E;
 
