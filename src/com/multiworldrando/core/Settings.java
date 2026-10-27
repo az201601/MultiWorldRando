@@ -8,6 +8,7 @@ public final class Settings {
     private boolean randomizeStartingGold;
     private boolean randomizeDrawerMoney;
     private boolean shuffleSeedShopSlots;
+    private boolean shuffleSeedSeasons;
 
     public boolean isRandomizeStartingGold() {
         return randomizeStartingGold;
@@ -31,5 +32,13 @@ public final class Settings {
 
     public void setShuffleSeedShopSlots(boolean shuffleSeedShopSlots) {
         this.shuffleSeedShopSlots = shuffleSeedShopSlots;
+    }
+
+    public boolean isShuffleSeedSeasons() {
+        return shuffleSeedSeasons;
+    }
+
+    public void setShuffleSeedSeasons(boolean shuffleSeedSeasons) {
+        this.shuffleSeedSeasons = shuffleSeedSeasons;
     }
 }

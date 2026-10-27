@@ -118,13 +118,55 @@ public final class HarvestMoonGbcRom {
     };
 
     /**
-     * Seed shop buy-menu slot texts (bank $1B): 9 fixed 32-byte rows,
-     * two 16-char lines each ("Turnip Seeds" / "1 bag is 120G."). The menu
-     * script at CPU $7715 points at these in slot order; shuffling the row
-     * contents re-labels what each slot shows.
+     * Seed shop buy-menu slot texts (bank $1B, mirrored in bank $3B): 9 fixed
+     * 32-byte rows, two 16-char lines each ("Turnip Seeds" / "1 bag is
+     * 120G."). The menu script at CPU $7715 points at these in slot order;
+     * shuffling the row contents re-labels what each slot shows. Both copies
+     * must be patched identically.
      */
-    public static final int SEED_SHOP_ROWS_OFFSET = 0x06F773;
+    public static final int[] SEED_SHOP_ROWS_OFFSETS = {
+        0x06F773, // bank $1B
+        0x0EF773, // bank $3B (mirror)
+    };
     public static final int SEED_SHOP_ROW_SIZE = 32;
+
+    /**
+     * Seed season availability: record byte +2 is a season bitmask tested as
+     * {@code seasonBitTable[$B884] & mask}, where $B884 is the current season
+     * index and the bit table (CPU $49F4, bank $09) maps 0-3 to
+     * 01=spring, 02=summer, 04=fall, 08=winter. The 8 crop seeds carry the
+     * single-bit masks below (two crops per season); Grass Seeds keeps 07
+     * (spring|summer|fall) and is excluded from season shuffling.
+     */
+    public static final int SEASON_BYTE_OFFSET = 2;
+    public static final int GRASS_SEASON_MASK = 0x07;
+    public static final int[] CROP_SEASON_MASKS = {
+        0x01, 0x01, // spring: Turnip, Potato
+        0x02, 0x02, // summer: Tomato, Corn
+        0x04, 0x04, // fall:   Eggplant, Peanut
+        0x08, 0x08, // winter: Carrot, Broccoli
+    };
+
+    /** Season names in game spelling, indexed by season bit position. */
+    public static final String[] SEASON_NAMES = {
+        "Spring", "Summer", "Fall", "Winter",
+    };
+
+    /**
+     * Tomato Seeds' description ends its second frame with "Summer," - the
+     * only season mentioned in any seed description. When the crop seasons
+     * are shuffled this word is rewritten to Tomato's new season (the
+     * 7-byte span "Summer," becomes e.g. "Fall," + pad). Two copies, in the
+     * bank $1B/$3B mirrors.
+     */
+    public static final int[] TOMATO_SUMMER_TEXT_OFFSETS = {
+        0x06F388, // bank $1B
+        0x0EF388, // bank $3B (mirror)
+    };
+    public static final byte[] TOMATO_SUMMER_TEXT = {
+        (byte) 0x12, (byte) 0x2E, (byte) 0x26, (byte) 0x26, // "Summ"
+        (byte) 0x1E, (byte) 0x2B, (byte) 0x8E,              // "er,"
+    };
 
     /** Global ROM checksum (not verified by the game, kept correct anyway). */
     public static final int GLOBAL_CHECKSUM_HI = 0x14E;
