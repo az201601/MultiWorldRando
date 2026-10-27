@@ -168,6 +168,50 @@ public final class HarvestMoonGbcRom {
         (byte) 0x1E, (byte) 0x2B, (byte) 0x8E,              // "er,"
     };
 
+    /**
+     * The field side of crop survival. Two map walks in bank $02 (mirrored
+     * in bank $22) hardcode each crop's valid season as a
+     * {@code ld a,[$B884]; cp <season>} against the current season index:
+     * <ul>
+     * <li>walk 1 (CPU $4F9B+, runs at every farm-map load - the game's
+     *     "the crop is gone when you check on it"): kills the crop
+     *     (writes the tilled tile) unless the season matches;</li>
+     * <li>walk 2 (CPU $69BB+, runs at sleep / new day): advances growth
+     *     and kills the same way.</li>
+     * </ul>
+     * The byte offsets below point at the {@code cp} immediate - one per
+     * crop per walk per bank. When the season shuffle reassigns a crop,
+     * these immediates are rewritten so the field agrees with the shop.
+     * Grass is excluded: its checks read "dies in winter" and keep
+     * spring/summer/fall exactly as vanilla.
+     * <p>
+     * Each entry: { walk1 bank $02, walk2 bank $02, walk1 bank $22,
+     * walk2 bank $22 }, in crop order.
+     */
+    public static final int[][] CROP_SEASON_CHECK_OFFSETS = {
+        { 0x08FC5, 0x00AB43, 0x088FB7, 0x08AAA3 }, // Turnip
+        { 0x08FCE, 0x00AB86, 0x088FC0, 0x08AAE6 }, // Potato
+        { 0x08FB4, 0x00A9E2, 0x088FA6, 0x08A942 }, // Tomato
+        { 0x08FBC, 0x00AAD8, 0x088FAE, 0x08AA38 }, // Corn
+        { 0x08FD7, 0x00ABC9, 0x088FC9, 0x08AB29 }, // Eggplant
+        { 0x08FE0, 0x00AC0C, 0x088FD2, 0x08AB6C }, // Peanut
+        { 0x08FE9, 0x00AC4F, 0x088FDB, 0x08ABAF }, // Carrot
+        { 0x08FF2, 0x00AC92, 0x088FE4, 0x08ABF2 }, // Broccoli
+    };
+
+    /** Vanilla season index at each site above (0 spring .. 3 winter). */
+    public static final int[] CROP_SEASON_CHECK_VANILLA = {
+        0, 0, 1, 1, 2, 2, 3, 3,
+    };
+
+    /**
+     * Grass' "dies in winter" checks (same instruction shape, season
+     * imm 03) - validated but never rewritten.
+     */
+    public static final int[] GRASS_SEASON_CHECK_OFFSETS = {
+        0x08F9F, 0x00A9BF, 0x088F91, 0x08A91F,
+    };
+
     /** Global ROM checksum (not verified by the game, kept correct anyway). */
     public static final int GLOBAL_CHECKSUM_HI = 0x14E;
 
