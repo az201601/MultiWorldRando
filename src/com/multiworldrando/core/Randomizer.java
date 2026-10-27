@@ -12,6 +12,7 @@ import java.util.Random;
 
 import com.multiworldrando.hmgbc.GrandpaDrawerPatch;
 import com.multiworldrando.hmgbc.HarvestMoonGbcRom;
+import com.multiworldrando.hmgbc.SeedShopShufflePatch;
 import com.multiworldrando.hmgbc.StartingGoldPatch;
 
 /**
@@ -68,6 +69,8 @@ public final class Randomizer {
                 settings.isRandomizeStartingGold() ? "yes" : "no");
         spoiler.addSetting("Randomize grandpa's rainy day money drawer (0-1000G)",
                 settings.isRandomizeDrawerMoney() ? "yes" : "no");
+        spoiler.addSetting("Shuffle seed shop slots (what each slot sells)",
+                settings.isShuffleSeedShopSlots() ? "yes" : "no");
 
         List<Patch> patches = new ArrayList<Patch>();
         if (settings.isRandomizeStartingGold()) {
@@ -75,6 +78,9 @@ public final class Randomizer {
         }
         if (settings.isRandomizeDrawerMoney()) {
             patches.add(new GrandpaDrawerPatch());
+        }
+        if (settings.isShuffleSeedShopSlots()) {
+            patches.add(new SeedShopShufflePatch());
         }
 
         int index = 1;

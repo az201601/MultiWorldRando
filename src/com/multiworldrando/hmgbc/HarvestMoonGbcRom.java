@@ -77,6 +77,55 @@ public final class HarvestMoonGbcRom {
         (byte) 0xCD, (byte) 0x56, (byte) 0x10
     };
 
+    /**
+     * Seed shop: per-slot item table. Each 9-byte record describes what one
+     * buy-menu slot sells:
+     * <pre>
+     *   +0..+1  SRAM flag address (per-item stock/bought flag, $B8D2-$B8DA)
+     *   +2      season availability bitmask (01 spring, 02 summer, 04 fall,
+     *           08 winter, 07 all year)
+     *   +3      growth parameter (per-item)
+     *   +4..+5  pointer to the slot's display entry in the buy-menu script
+     *           (POSITION-linked: slot i always uses entry i)
+     *   +6..+7  pointer to the item's [desc-list + purchase header] pair in
+     *           bank $1B (carries the price charged, item granted and the
+     *           "Those are ... Seeds" description)
+     *   +8      inventory RAM slot offset (Grass $50, crops $54-$70)
+     * </pre>
+     * Two byte-identical copies (bank $09 and its bank $29 mirror). One
+     * record per slot, in menu order (Turnip, Potato, Tomato, Corn, Eggplant,
+     * Peanut, Carrot, Broccoli, Grass).
+     */
+    public static final int[] SEED_SHOP_TABLE_OFFSETS = {
+        0x02495D, // bank $09
+        0x0A4940, // bank $29 (mirror)
+    };
+
+    /** Slot count / record size of the seed shop item table. */
+    public static final int SEED_SHOP_SLOT_COUNT = 9;
+    public static final int SEED_SHOP_RECORD_SIZE = 9;
+
+    /**
+     * Vanilla record 0 (Turnip Seeds), used as a layout signature. Verified
+     * against both table copies before patching.
+     */
+    public static final byte[] SEED_SHOP_RECORD0_SIGNATURE = {
+        (byte) 0xD2, (byte) 0xB8, // flag $B8D2
+        (byte) 0x01, (byte) 0x1F, // spring, growth $1F
+        (byte) 0x19, (byte) 0x77, // display entry ptr $7719
+        (byte) 0x26, (byte) 0x6E, // desc-list ptr $6E26
+        (byte) 0x54,              // inventory RAM $54
+    };
+
+    /**
+     * Seed shop buy-menu slot texts (bank $1B): 9 fixed 32-byte rows,
+     * two 16-char lines each ("Turnip Seeds" / "1 bag is 120G."). The menu
+     * script at CPU $7715 points at these in slot order; shuffling the row
+     * contents re-labels what each slot shows.
+     */
+    public static final int SEED_SHOP_ROWS_OFFSET = 0x06F773;
+    public static final int SEED_SHOP_ROW_SIZE = 32;
+
     /** Global ROM checksum (not verified by the game, kept correct anyway). */
     public static final int GLOBAL_CHECKSUM_HI = 0x14E;
 
