@@ -126,6 +126,28 @@ keeps `07` (spring|summer|fall) year-round within those seasons.
   new season — the only season word in any seed description
 - The spoiler log lists what each season sells now versus vanilla
 
+#### Crop survival in the shuffled season
+
+In the vanilla game a crop planted outside its season vanishes the next game
+day when you go to check on it (the game's notion of a crop dying). The crop's
+season is *not* hardcoded anywhere else in the ROM: the shop item table's
+record byte +2 is the only per-crop season data in the game, and the purchase
+data (desc lists, headers, price/name pointers) carries no season field at all
+— the only season word in any seed text is Tomato's description line, which
+the patch rewrites.
+
+Because the shuffle permutes the season bytes *among the crop records*, every
+way the game can look up "this crop's season" (by scanning the records for the
+crop's identity, or from state copied out of a record when the seed is bought
+or planted) sees the crop's shuffled season. A crop bought and planted in its
+assigned season is therefore in-season as far as the survival check is
+concerned. The expected behaviour after the shuffle:
+
+- A crop planted in the season its seed is sold in survives and grows, and
+  still dies when that season ends (vanilla behaviour)
+- A seed bought in one season and planted in a different one still dies the
+  next day (vanilla behaviour, kept intact)
+
 ## Layout
 
 ```
