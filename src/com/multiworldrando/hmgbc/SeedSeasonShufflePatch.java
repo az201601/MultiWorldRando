@@ -19,8 +19,11 @@ import com.multiworldrando.core.SpoilerLog;
  * This patch permutes the 8 crop masks among the 8 crop records (two crops per
  * season, as vanilla - the shop shelf is only ever asked to show up to three
  * bags), leaving Grass Seeds' 07 untouched. It works standalone or combined
- * with the slot shuffle. Tomato Seeds' description ("...during Summer,") is
- * rewritten to its new season - the only season word in any seed description.
+ * with the slot shuffle. The field's crop-survival checks (two map walks that
+ * hardcode each crop's season) are realigned with the same permutation, so a
+ * crop planted in its assigned season lives and grows exactly as vanilla.
+ * Tomato Seeds' description ("...during Summer,") is rewritten to its new
+ * season - the only season word in any seed description.
  */
 public final class SeedSeasonShufflePatch implements Patch {
 
@@ -118,6 +121,17 @@ public final class SeedSeasonShufflePatch implements Patch {
             throw new IllegalStateException(
                     "All-season record is not Grass Seeds - refusing to patch.");
         }
+        // The field-side crop-survival checks must be vanilla too
+        // ("ld a,[$B884]; cp <vanilla season>" in both walks, both banks).
+        for (int i = 0; i < HarvestMoonGbcRom.CROP_SEASON_CHECK_OFFSETS.length; i++) {
+            for (int off : HarvestMoonGbcRom.CROP_SEASON_CHECK_OFFSETS[i]) {
+                checkSeasonCompare(rom, off,
+                        HarvestMoonGbcRom.CROP_SEASON_CHECK_VANILLA[i]);
+            }
+        }
+        for (int off : HarvestMoonGbcRom.GRASS_SEASON_CHECK_OFFSETS) {
+            checkSeasonCompare(rom, off, 3); // grass: "dies in winter"
+        }
 
         // ---- permute the 8 crop masks (Fisher-Yates) ----
         int[] masks = new int[8];
@@ -157,6 +171,12 @@ public final class SeedSeasonShufflePatch implements Patch {
                     | (rom[table + i * recSize + 7] & 0xFF) << 8;
             String name = cropNameForDesc(desc);
             int season = seasonIndexOf(mask);
+            // Realign the field's survival check with the shop: both map
+            // walks (and their bank $22 mirrors) hardcode this crop's
+            // season as a cp-imm - point them at the new season.
+            for (int off : HarvestMoonGbcRom.CROP_SEASON_CHECK_OFFSETS[cropIndexOf(desc)]) {
+                rom[off] = (byte) season;
+            }
             if (seasonFill[season] < 2) {
                 seasonCrops[season][seasonFill[season]] = name;
                 seasonFill[season]++;
@@ -193,6 +213,9 @@ public final class SeedSeasonShufflePatch implements Patch {
                     + " [was " + VANILLA_SEASON_CROPS[s][0] + ", "
                     + VANILLA_SEASON_CROPS[s][1] + grass + "]");
         }
+        spoiler.addChange("Field crop survival",
+                "follows the shuffled seasons - crops grow where the shop sells them "
+                + "and die out of season [was the vanilla season table]");
     }
 
     private static int seasonIndexOf(int mask) {
@@ -201,6 +224,37 @@ public final class SeedSeasonShufflePatch implements Patch {
             case 0x02: return 1;
             case 0x04: return 2;
             default:   return 3;
+        }
+    }
+
+    /** Site-table index of a crop: the order of the vanilla desc pointers. */
+    private static int cropIndexOf(int desc) {
+        int[] descs = {
+            0x6E26, 0x6E7B, 0x6ED0, 0x6F25,
+            0x6F7A, 0x6FCF, 0x7024, 0x7079,
+        };
+        for (int i = 0; i < descs.length; i++) {
+            if (descs[i] == desc) {
+                return i;
+            }
+        }
+        throw new IllegalStateException(String.format(
+                "No field-check site for crop (desc 0x%04X) - refusing to patch.", desc));
+    }
+
+    /** Validates a "ld a,[$B884]; cp imm" site and returns the imm. */
+    private static void checkSeasonCompare(byte[] rom, int off, int wantImm) {
+        int[] sig = { 0xFA, 0x84, 0xB8, 0xFE };
+        for (int i = 0; i < sig.length; i++) {
+            if ((rom[off - 4 + i] & 0xFF) != sig[i]) {
+                throw new IllegalStateException(String.format(
+                        "Unexpected crop-survival check at ROM 0x%06X - refusing to patch.", off));
+            }
+        }
+        if ((rom[off] & 0xFF) != wantImm) {
+            throw new IllegalStateException(String.format(
+                    "Unexpected season imm %02X at ROM 0x%06X (want %02X) - refusing to patch.",
+                    rom[off] & 0xFF, off, wantImm));
         }
     }
 
