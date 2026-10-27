@@ -42,12 +42,24 @@ public final class Randomizer {
      */
     public static Result randomize(File romFile, Settings settings, File outputDir)
             throws IOException, RomValidationException {
+        return randomize(romFile, settings, outputDir, null);
+    }
+
+    /**
+     * Randomizes the given ROM according to the settings.
+     * If {@code requestedSeed} is null a seed is generated automatically;
+     * otherwise the given seed is used, so the run is reproducible.
+     */
+    public static Result randomize(File romFile, Settings settings, File outputDir,
+            Long requestedSeed) throws IOException, RomValidationException {
 
         byte[] rom = readFile(romFile);
         RomValidator.validate(rom);
 
-        // Seeds are auto-generated at this point - never user-supplied.
-        long seed = SeedGenerator.nextSeed();
+        // Auto-generate unless the user supplied a specific seed.
+        long seed = requestedSeed != null
+                ? requestedSeed.longValue()
+                : SeedGenerator.nextSeed();
         String seedStr = SeedGenerator.format(seed);
 
         SpoilerLog spoiler = new SpoilerLog(seed, romFile.getName(),

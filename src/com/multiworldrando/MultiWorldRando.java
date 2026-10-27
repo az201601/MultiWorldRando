@@ -16,7 +16,7 @@ import com.multiworldrando.ui.RandomizerFrame;
  * With no arguments the Swing GUI starts. For automated testing there is a
  * headless mode:
  * <pre>
- *   java -jar MultiWorldRando.jar --headless &lt;rom&gt; [--gold] [--out &lt;dir&gt;]
+ *   java -jar MultiWorldRando.jar --headless &lt;rom&gt; [--gold] [--drawer] [--seed &lt;hex&gt;] [--out &lt;dir&gt;]
  * </pre>
  */
 public final class MultiWorldRando {
@@ -45,6 +45,7 @@ public final class MultiWorldRando {
         String romPath = null;
         boolean gold = false;
         boolean drawer = false;
+        String seedText = null;
         File outDir = null;
 
         for (int i = 1; i < args.length; i++) {
@@ -52,6 +53,8 @@ public final class MultiWorldRando {
                 gold = true;
             } else if ("--drawer".equals(args[i])) {
                 drawer = true;
+            } else if ("--seed".equals(args[i]) && i + 1 < args.length) {
+                seedText = args[++i];
             } else if ("--out".equals(args[i]) && i + 1 < args.length) {
                 outDir = new File(args[++i]);
             } else if (romPath == null) {
@@ -60,7 +63,7 @@ public final class MultiWorldRando {
         }
 
         if (romPath == null) {
-            System.err.println("usage: --headless <rom> [--gold] [--drawer] [--out <dir>]");
+            System.err.println("usage: --headless <rom> [--gold] [--drawer] [--seed <hex>] [--out <dir>]");
             return 2;
         }
 
@@ -69,8 +72,13 @@ public final class MultiWorldRando {
             settings.setRandomizeStartingGold(gold);
             settings.setRandomizeDrawerMoney(drawer);
 
+            Long requestedSeed = null;
+            if (seedText != null) {
+                requestedSeed = SeedGenerator.parseSeed(seedText);
+            }
+
             Randomizer.Result result =
-                    Randomizer.randomize(new File(romPath), settings, outDir);
+                    Randomizer.randomize(new File(romPath), settings, outDir, requestedSeed);
 
             System.out.println("SEED=" + SeedGenerator.format(result.seed));
             System.out.println("ROM=" + result.romOut.getAbsolutePath());
