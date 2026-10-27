@@ -21,9 +21,11 @@ import com.multiworldrando.core.SpoilerLog;
  * bags), leaving Grass Seeds' 07 untouched. It works standalone or combined
  * with the slot shuffle. The field's crop-survival checks (two map walks that
  * hardcode each crop's season) are realigned with the same permutation, so a
- * crop planted in its assigned season lives and grows exactly as vanilla.
- * Tomato Seeds' description ("...during Summer,") is rewritten to its new
- * season - the only season word in any seed description.
+ * crop planted in its assigned season lives and grows exactly as vanilla, and
+ * {@link CropArtFix} realigns the crop stage graphics so each crop renders
+ * its own art in its new season. Tomato Seeds' description ("...during
+ * Summer,") is rewritten to its new season - the only season word in any seed
+ * description.
  */
 public final class SeedSeasonShufflePatch implements Patch {
 
@@ -161,6 +163,7 @@ public final class SeedSeasonShufflePatch implements Patch {
         // ---- find each crop's assigned season for the spoiler and Tomato text ----
         String[][] seasonCrops = new String[4][2];
         int[] seasonFill = new int[4];
+        int[] seasonByCrop = new int[8];
         int tomatoSeasonMask = 0x02; // vanilla; updated below
         for (int i = 0; i < n; i++) {
             if (i == grassSlot) {
@@ -171,6 +174,7 @@ public final class SeedSeasonShufflePatch implements Patch {
                     | (rom[table + i * recSize + 7] & 0xFF) << 8;
             String name = cropNameForDesc(desc);
             int season = seasonIndexOf(mask);
+            seasonByCrop[cropIndexOf(desc)] = season;
             // Realign the field's survival check with the shop: both map
             // walks (and their bank $22 mirrors) hardcode this crop's
             // season as a cp-imm - point them at the new season.
@@ -185,6 +189,12 @@ public final class SeedSeasonShufflePatch implements Patch {
                 tomatoSeasonMask = mask;
             }
         }
+
+        // ---- realign crop stage graphics with the shuffled seasons ----
+        // The seasonal tile chunks store one art per shared BG slot; a crop
+        // planted in a shuffled season would otherwise render with another
+        // crop's art (or nothing at all).
+        CropArtFix.apply(rom, seasonByCrop, spoiler);
 
         // ---- rewrite Tomato's "during Summer," to its new season ----
         String seasonName = HarvestMoonGbcRom.SEASON_NAMES[seasonIndexOf(tomatoSeasonMask)];

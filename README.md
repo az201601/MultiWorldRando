@@ -147,6 +147,29 @@ winter" rule. The expected behaviour after the shuffle:
 - A seed bought in one season and planted in a different one still dies the
   next day (vanilla behaviour, kept intact)
 
+#### Crop graphics in the shuffled season
+
+Crop stage tiles expand to shared BG tiles whose pixel art lives in the
+seasonal tile chunks (bank $0B for the DMG load path, bank $2B for the CGB
+path - one pair of chunks per season). Vanilla only ever shows each crop in
+its own season, so a shared tile slot holds "the art of whichever crop grows
+this season" - and is blank for the Tomato/Corn/Broccoli fruiting stages
+outside summer/winter. Planted in a shuffled season, a crop would otherwise
+grow up as a different crop's art (or disappear entirely).
+
+The generator realigns the art per seed: for each season, each crop-art tile
+slot is rewritten to the art of the crop actually assigned to that season
+(taken from that crop's vanilla chunk, in both art sets). When two same-family
+crops land in one season and would share a slot, the losing crop's metatile
+rows are repointed to spare tile slots. Crops only ever render in their
+assigned season (the field walks clear them everywhere else), so each crop's
+art is only needed in its own season's chunks - and when the shuffle is off
+the whole fix is a no-op and the ROM is byte-identical to vanilla.
+
+Verified in-game: an out-of-vanilla-season crop planted on a shuffled seed
+renders pixel-identical to the same crop in its vanilla season, and the
+non-crop screens are unchanged (frame-by-frame A/B against vanilla).
+
 ## Layout
 
 ```
