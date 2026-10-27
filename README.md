@@ -6,8 +6,9 @@ An Archipelago-like multiworld randomizer, currently targeting **Harvest Moon GB
 ## Status
 
 Features so far: **starting gold randomization (0–500G)**, **grandpa's rainy
-day money drawer randomization (0–1000G)**, **optional user-entered seed**, and
-**seed shop slot shuffling (what each slot sells)**.
+day money drawer randomization (0–1000G)**, **optional user-entered seed**,
+**seed shop slot shuffling (what each slot sells)**, and **seed season
+shuffling (which season sells which crops)**.
 
 ## Requirements
 
@@ -35,6 +36,7 @@ java -jar MultiWorldRando.jar
    - **Randomize starting gold (0–500G)**
    - **Randomize grandpa's rainy day money drawer (0–1000G)**
    - **Shuffle seed shop slots (what each slot sells)**
+   - **Shuffle seed seasons (which season sells which crops)**
 3. Optionally type a **Seed** (1–16 hex digits) to generate exactly that
    seed — leave it blank to generate a random one
 4. Click **Generate**
@@ -47,7 +49,7 @@ Output (written next to the ROM):
 ### Headless (automation/testing)
 
 ```sh
-java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--seedshop] [--seed <hex>] [--out <dir>]
+java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--seedshop] [--seedseasons] [--seed <hex>] [--out <dir>]
 ```
 
 Prints `SEED=`, `ROM=`, `SPOILER=` on success. With `--seed` the run is
@@ -97,13 +99,32 @@ Reverse-engineered data (Harvest Moon GB (USA)):
   description) and its inventory RAM slot, plus the (position-linked) pointer
   to the slot's display text
 - The 9 display texts are fixed 32-byte rows at file offset `0x06F773`
-  (bank `$1B`)
+  (bank `$1B`) with a mirror at `0x0EF773` (bank `$3B`); both copies are
+  patched in sync
 - The patch permutes the item-identity fields across the 9 slots and moves the
   display rows with the same permutation — every slot consistently shows and
   sells its new item, including the price tag, the description dialog and the
   price actually charged. Both table copies are patched in sync
 - The spoiler log lists what each slot sells and what it sold in the vanilla
   game
+
+### Seed season shuffle
+
+The shop only offers seeds whose **season availability bitmask** matches the
+current season (record byte +2: `01` spring, `02` summer, `04` fall, `08`
+winter). Vanilla sells {Turnip, Potato} in spring, {Tomato, Corn} in summer,
+{Eggplant, Peanut} in fall and {Carrot, Broccoli} in winter; **Grass Seeds**
+keeps `07` (spring|summer|fall) year-round within those seasons.
+
+- The patch permutes the 8 crop masks among the 8 crop records — exactly two
+  crops per season, as vanilla (the shop shelf never asks for more than three
+  bags at once) — and leaves Grass Seeds' `07` untouched
+- Works standalone or combined with the slot shuffle; the two shuffles use
+  separate RNG streams, so with both enabled the seed entry reproduces
+  everything
+- Tomato Seeds' description ("…during Summer,") is rewritten to the crop's
+  new season — the only season word in any seed description
+- The spoiler log lists what each season sells now versus vanilla
 
 ## Layout
 

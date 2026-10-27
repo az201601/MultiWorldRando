@@ -73,8 +73,19 @@ public final class SeedShopShufflePatch implements Patch {
             }
         }
 
-        int rowsOff = HarvestMoonGbcRom.SEED_SHOP_ROWS_OFFSET;
+        int[] rowsOffs = HarvestMoonGbcRom.SEED_SHOP_ROWS_OFFSETS;
         int rowSize = HarvestMoonGbcRom.SEED_SHOP_ROW_SIZE;
+
+        // Both row copies (banks $1B/$3B) must be identical before we touch anything.
+        for (int off : rowsOffs) {
+            for (int i = 0; i < n * rowSize; i++) {
+                if (rom[off + i] != rom[rowsOffs[0] + i]) {
+                    throw new IllegalStateException(String.format(
+                            "Seed shop row copies differ at ROM 0x%06X - refusing to patch.",
+                            off + i));
+                }
+            }
+        }
 
         // ---- build a permutation of slot indices (Fisher-Yates) ----
         int[] perm = new int[n];
@@ -96,7 +107,7 @@ public final class SeedShopShufflePatch implements Patch {
         }
         byte[][] oldRows = new byte[n][rowSize];
         for (int i = 0; i < n; i++) {
-            System.arraycopy(rom, rowsOff + i * rowSize, oldRows[i], 0, rowSize);
+            System.arraycopy(rom, rowsOffs[0] + i * rowSize, oldRows[i], 0, rowSize);
         }
 
         // ---- permute: slot i receives the item previously in slot perm[i].
@@ -116,14 +127,16 @@ public final class SeedShopShufflePatch implements Patch {
             System.arraycopy(oldRows[perm[i]], 0, newRows[i], 0, rowSize);
         }
 
-        // ---- write both table copies and the rows ----
+        // ---- write both table copies and both row copies ----
         for (int t : HarvestMoonGbcRom.SEED_SHOP_TABLE_OFFSETS) {
             for (int i = 0; i < n; i++) {
                 System.arraycopy(newRecords[i], 0, rom, t + i * recSize, recSize);
             }
         }
-        for (int i = 0; i < n; i++) {
-            System.arraycopy(newRows[i], 0, rom, rowsOff + i * rowSize, rowSize);
+        for (int off : rowsOffs) {
+            for (int i = 0; i < n; i++) {
+                System.arraycopy(newRows[i], 0, rom, off + i * rowSize, rowSize);
+            }
         }
 
         // ---- spoiler log ----
