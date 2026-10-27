@@ -5,8 +5,9 @@ An Archipelago-like multiworld randomizer, currently targeting **Harvest Moon GB
 
 ## Status
 
-First features are in: **starting gold randomization (0–500G)** and
-**grandpa's rainy day money drawer randomization (0–1000G)**.
+Features so far: **starting gold randomization (0–500G)**, **grandpa's rainy
+day money drawer randomization (0–1000G)**, **optional user-entered seed**, and
+**seed shop slot shuffling (what each slot sells)**.
 
 ## Requirements
 
@@ -33,6 +34,7 @@ java -jar MultiWorldRando.jar
 2. Tick the options you want:
    - **Randomize starting gold (0–500G)**
    - **Randomize grandpa's rainy day money drawer (0–1000G)**
+   - **Shuffle seed shop slots (what each slot sells)**
 3. Optionally type a **Seed** (1–16 hex digits) to generate exactly that
    seed — leave it blank to generate a random one
 4. Click **Generate**
@@ -45,7 +47,7 @@ Output (written next to the ROM):
 ### Headless (automation/testing)
 
 ```sh
-java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--seed <hex>] [--out <dir>]
+java -jar MultiWorldRando.jar --headless <rom> [--gold] [--drawer] [--seedshop] [--seed <hex>] [--out <dir>]
 ```
 
 Prints `SEED=`, `ROM=`, `SPOILER=` on success. With `--seed` the run is
@@ -79,6 +81,29 @@ Reverse-engineered facts (Harvest Moon GB (USA)):
     `Received XG!!` with the actual amount
   - **500–1000G** → the vanilla dialog, with the `Received XG!!` line
     updated to the actual amount
+
+### Seed shop slot shuffle
+
+The seed shop buy menu has **9 slots** (Turnip, Potato, Tomato, Corn,
+Eggplant, Peanut, Carrot, Broccoli and Grass seeds), each showing a name and
+price tag ("Turnip Seeds / 1 bag is 120G.").
+
+Reverse-engineered data (Harvest Moon GB (USA)):
+
+- A 9-record per-slot item table lives at file offsets `0x02495D` (bank `$09`)
+  and `0x0A4940` (bank `$29` mirror). Each 9-byte record carries the item's
+  identity: stock flag, season availability, growth parameter, the pointer to
+  its purchase data (price charged, item granted, "Those are … Seeds."
+  description) and its inventory RAM slot, plus the (position-linked) pointer
+  to the slot's display text
+- The 9 display texts are fixed 32-byte rows at file offset `0x06F773`
+  (bank `$1B`)
+- The patch permutes the item-identity fields across the 9 slots and moves the
+  display rows with the same permutation — every slot consistently shows and
+  sells its new item, including the price tag, the description dialog and the
+  price actually charged. Both table copies are patched in sync
+- The spoiler log lists what each slot sells and what it sold in the vanilla
+  game
 
 ## Layout
 

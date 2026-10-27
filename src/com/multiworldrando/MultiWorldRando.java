@@ -16,7 +16,7 @@ import com.multiworldrando.ui.RandomizerFrame;
  * With no arguments the Swing GUI starts. For automated testing there is a
  * headless mode:
  * <pre>
- *   java -jar MultiWorldRando.jar --headless &lt;rom&gt; [--gold] [--drawer] [--seed &lt;hex&gt;] [--out &lt;dir&gt;]
+ *   java -jar MultiWorldRando.jar --headless &lt;rom&gt; [--gold] [--drawer] [--seedshop] [--seed &lt;hex&gt;] [--out &lt;dir&gt;]
  * </pre>
  */
 public final class MultiWorldRando {
@@ -45,6 +45,7 @@ public final class MultiWorldRando {
         String romPath = null;
         boolean gold = false;
         boolean drawer = false;
+        boolean seedShop = false;
         String seedText = null;
         File outDir = null;
 
@@ -53,6 +54,8 @@ public final class MultiWorldRando {
                 gold = true;
             } else if ("--drawer".equals(args[i])) {
                 drawer = true;
+            } else if ("--seedshop".equals(args[i])) {
+                seedShop = true;
             } else if ("--seed".equals(args[i]) && i + 1 < args.length) {
                 seedText = args[++i];
             } else if ("--out".equals(args[i]) && i + 1 < args.length) {
@@ -63,7 +66,7 @@ public final class MultiWorldRando {
         }
 
         if (romPath == null) {
-            System.err.println("usage: --headless <rom> [--gold] [--drawer] [--seed <hex>] [--out <dir>]");
+            System.err.println("usage: --headless <rom> [--gold] [--drawer] [--seedshop] [--seed <hex>] [--out <dir>]");
             return 2;
         }
 
@@ -71,6 +74,7 @@ public final class MultiWorldRando {
             Settings settings = new Settings();
             settings.setRandomizeStartingGold(gold);
             settings.setRandomizeDrawerMoney(drawer);
+            settings.setShuffleSeedShopSlots(seedShop);
 
             Long requestedSeed = null;
             if (seedText != null) {

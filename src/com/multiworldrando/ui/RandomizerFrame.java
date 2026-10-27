@@ -37,6 +37,8 @@ public final class RandomizerFrame extends JFrame {
             new JCheckBox("Randomize starting gold (0-500G)");
     private final JCheckBox drawerMoneyBox =
             new JCheckBox("Randomize grandpa's rainy day money drawer (0-1000G)");
+    private final JCheckBox seedShopBox =
+            new JCheckBox("Shuffle seed shop slots (what each slot sells)");
     private final JTextField seedField = new JTextField();
     private final JButton generateButton = new JButton("Generate");
     private final JTextArea logArea = new JTextArea();
@@ -85,11 +87,14 @@ public final class RandomizerFrame extends JFrame {
         form.add(drawerMoneyBox, c);
 
         c.gridy = 3;
+        form.add(seedShopBox, c);
+
+        c.gridy = 4;
         form.add(new JLabel(
                 "<html><i>Leave the seed blank to generate a random one, or type a seed"
                 + " (1-16 hex digits) to generate exactly that one.</i></html>"), c);
 
-        c.gridy = 4;
+        c.gridy = 5;
         c.gridwidth = 1;
         c.gridx = 0;
         form.add(new JLabel("Seed (optional):"), c);
@@ -152,6 +157,7 @@ public final class RandomizerFrame extends JFrame {
         Settings settings = new Settings();
         settings.setRandomizeStartingGold(startingGoldBox.isSelected());
         settings.setRandomizeDrawerMoney(drawerMoneyBox.isSelected());
+        settings.setShuffleSeedShopSlots(seedShopBox.isSelected());
 
         generateButton.setEnabled(false);
         log("Generating\u2026");
